@@ -85,6 +85,16 @@ Below we illustrate the model output. On the ground truth, we distinguish vehicl
 
 <img src='./imgs/vehicle_segm.gif'>
 
+We also illustrate the results of a temporal model on random samples taken from the NuScenes validation set. The model used for the visualisation is trained without filtering, at resolution 448x800.
+
+<img src='./imgs/vehicle_segm_temp.gif'>
+
+## ✨ Sparse inference
+
+PointBeV can be used to perform inference with fewer points than other models. We illustrate this below with a vehicle segmentation model. We can see that PointBeV is able to perform inference with 1/10 of the points used by other models while maintaining a similar performance. This is possible thanks to the sparse approach of PointBeV. In green is represented the sampling mask. Predictions are only performed on the sampled points.
+
+<img src='./imgs/vehicle_segm_sparse_inference.gif'>
+
 ## 🔥 Pedestrian and lane segmentation
 
 PointBeV can also be used for different segmentation tasks such as pedestrians or hdmap segmentation.
