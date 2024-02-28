@@ -63,13 +63,11 @@
 If this work is helpful for your research, please consider citing the following BibTeX entry and putting a star on this repository.
 
 ```
-@misc{chambon2023pointbev,
+@inproceedings{chambon2024pointbev,
       title={PointBeV: A Sparse Approach to BeV Predictions}, 
       author={Loick Chambon and Eloi Zablocki and Mickael Chen and Florent Bartoccioni and Patrick Perez and Matthieu Cord},
-      year={2023},
-      eprint={2312.00703},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+      year={2024},
+      booktitle={CVPR}
 }
 ```
 
