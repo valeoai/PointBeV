@@ -1,0 +1,28 @@
+rich_progress_bar:
+  _target_: pytorch_lightning.callbacks.RichProgressBar
+  refresh_rate: 20
+
+learning_rate_monitor:
+  _target_:  pytorch_lightning.callbacks.LearningRateMonitor
+  logging_interval: step
+
+model_checkpoint:
+  _target_: pytorch_lightning.callbacks.ModelCheckpoint
+  verbose: False 
+  save_top_k: 1 
+  save_weights_only: False 
+  every_n_train_steps: null 
+  train_time_interval: null 
+  every_n_epochs: null 
+  save_on_train_epoch_end: null
+
+  dirpath: ${paths.output_dir}/checkpoints
+  monitor: "val_bev_metric_iou_Time_Pose_T0_P0" 
+  filename: '{epoch:03d}_{val_bev_metric_iou_Time_Pose_T0_P0:.4f}'
+  mode: "max"
+  save_last: True
+  auto_insert_metric_name: False
+
+model_summary:
+  _target_: pytorch_lightning.callbacks.RichModelSummary
+  max_depth: 3

@@ -1,0 +1,5 @@
+defaults:
+  - convn.yaml
+  - _self_
+
+dense_input: False

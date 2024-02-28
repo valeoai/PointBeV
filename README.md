@@ -1,7 +1,9 @@
-# Official PyTorch Implementation of [PointBeV: A Sparse Approach to BeV Predictions](https://arxiv.org/abs/2312.00703)
+# Official PyTorch Implementation of *PointBeV: A Sparse Approach to BeV Predictions*
+
 
 > [**PointBeV: A Sparse Approach to BeV Predictions**](https://arxiv.org/abs/2312.00703)<br>
 > [Loick Chambon](https://loickch.github.io/), [Eloi Zablocki](https://scholar.google.fr/citations?user=dOkbUmEAAAAJ&hl=fr), [Mickael Chen](https://sites.google.com/view/mickaelchen/), [Florent Bartoccioni](https://f-barto.github.io/), [Patrick Perez](https://ptrckprz.github.io/), [Matthieu Cord](https://cord.isir.upmc.fr/).<br> Valeo AI, Sorbonne University
+
 
 <div align="center">
 <table>
@@ -30,7 +32,7 @@
 
   <tr>
     <td colspan="2" align="center">
-      <em>Illustration of different sampling pattern, respectively: a full, a regular, a drivable hdmap, a lane hdmap, a front camera and a LiDAR pattern. PointBeV is flexible to any pattern.</em>
+      <em>Illustration of different sampling patterns, respectively: a full, a regular, a drivable hdmap, a lane hdmap, a front camera and a LiDAR pattern. PointBeV is flexible to any pattern.</em>
     </td>
   </tr>
 
@@ -56,9 +58,29 @@
 
 </table>
 
+## ✏️ Bibtex
+
+If this work is helpful for your research, please consider citing the following BibTeX entry and putting a star on this repository.
+
+```
+@misc{chambon2023pointbev,
+      title={PointBeV: A Sparse Approach to BeV Predictions}, 
+      author={Loick Chambon and Eloi Zablocki and Mickael Chen and Florent Bartoccioni and Patrick Perez and Matthieu Cord},
+      year={2023},
+      eprint={2312.00703},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```
+
+## Updates:
+* 【28/02/2024】 Code released.
+* 【27/02/2024】 [PointBeV](https://arxiv.org/abs/2312.00703) has been accepted to CVPR 2024.
+
+
 # 🚀 Main results
 
-## 🔥 Vehicle segmentation
+### 🔥 Vehicle segmentation
 PointBeV is originally designed for vehicle segmentation. It can be used with different sampling patterns and different memory/performance trade-offs. It can also be used with temporal context to improve the segmentation.
 <div align="center">
 <table border="1">
@@ -89,13 +111,13 @@ We also illustrate the results of a temporal model on random samples taken from 
 
 <img src='./imgs/vehicle_segm_temp.gif'>
 
-## ✨ Sparse inference
+### ✨ Sparse inference
 
 PointBeV can be used to perform inference with fewer points than other models. We illustrate this below with a vehicle segmentation model. We can see that PointBeV is able to perform inference with 1/10 of the points used by other models while maintaining a similar performance. This is possible thanks to the sparse approach of PointBeV. In green is represented the sampling mask. Predictions are only performed on the sampled points.
 
 <img src='./imgs/vehicle_segm_sparse_inference.gif'>
 
-## 🔥 Pedestrian and lane segmentation
+### 🔥 Pedestrian and lane segmentation
 
 PointBeV can also be used for different segmentation tasks such as pedestrians or hdmap segmentation.
 <div align="center">
@@ -121,7 +143,7 @@ PointBeV can also be used for different segmentation tasks such as pedestrians o
 </div>
 <img src='./imgs/pedes_segm.gif'>
 
-## 🔥 Lane segmentation
+### 🔥 Lane segmentation
 <div align="center">
 <table border="1">
   <caption><i>Lane segmentation of various static models at different resolutions. More details can be found in our paper.</i></caption>
@@ -144,43 +166,146 @@ PointBeV can also be used for different segmentation tasks such as pedestrians o
 </table>
 </div>
 
-# 🔨 Setup <a name="setup"></a>
+## 🔨 Setup <a name="setup"></a>
 
-Coming soon.
+➡️ Create the environment.
+```bash
+git clone https://github.com/...
+cd PointBeV
+micromamba create -f environment.yaml -y
+micromamba activate pointbev
+```
 
-# 🔄 Training <a name="training"></a>
+➡️ Install cuda dependencies.
+```bash
+cd pointbev/ops/gs; python setup.py build install; cd -
+```
 
-Coming soon. 
+➡️ Datasets.
 
-# 🔄 Evaluation <a name="evaluating"></a>
+We used nuScenes dataset for our experiments. You can download it from the official website: https://www.nuscenes.org/nuscenes.
+```bash
+mkdir data
+ln -s $PATH/nuscenes data/nuScenes
+pytest tests/test_datasets.py
+```
 
-Coming soon. 
+➡️ Backbones:
 
-# 👍 Acknowledgements
+Backbones are downloaded the first time the code is run. We've moved them to a folder so that we can retrieve the weights quickly for other runs.
+```bash
+wget https://download.pytorch.org/models/resnet50-0676ba61.pth -P backbones
+wget https://download.pytorch.org/models/resnet101-63fe2227.pth -P backbones
+wget https://github.com/lukemelas/EfficientNet-PyTorch/releases/download/1.0/efficientnet-b4-6ed6700e.pth -P backbones
+```
+
+**Optional:**
+Preprocess the dataset to train HDmaps model.
+Building hdmaps 'on the fly' can slow down the dataloader, so we strongly advise you to save the preprocessed dataset.
+```bash
+python pointbev/data/dataset/create_maps.py --split val train --version=trainval
+python pointbev/data/dataset/create_maps.py --split mini_val mini_train --version=mini
+```
+
+The directory will be as follows.
+```
+PointBeV
+├── data
+│   ├── nuScenes
+│   │   ├── samples
+│   │   ├── sweeps
+│   │   ├── v1.0-mini
+|   |   ├── v1.0-trainval
+|   |── nuscenes_processed_map
+|   |   ├── label
+|   |   |   ├── mini_train
+|   |   |   ├── mini_val
+|   |   |   ├── train
+|   |   |   ├── val
+|   |   ├── map_0.1
+```
+
+## 🔄 Training <a name="training"></a>
+
+Sanity check.
+```bash
+pytest tests/test_model.py
+```
+
+Overfitting.
+```bash
+python pointbev/train.py flags.debug=True task_name=debug
+```
+
+Training with simple options:
+```bash
+python pointbev/train.py \
+model/net/backbone=efficientnet \ # Specifiy the backbone
+data.batch_size=8 \ # Select a batch size
+data.valid_batch_size=24 \ # Can be a different batch size to faster validation
+data.img_params.min_visibility=1 \ # With or without the visibility filtering
+data/augs@data.img_params=scale_0_3 \ # Image resolution
+task_name=folder # Where to save the experiment in the logs folder.
+```
+
+If you want to train with the reproduced code of BeVFormer static (by specifying `model=BeVFormer`), do not forget to compile the CUDA dependency.
+```bash
+cd pointbev/ops/defattn; python setup.py build install; cd -
+```
+
+Then select BeVFormer model when running code:
+```bash
+python pointbev/train.py \
+model=BeVFormer 
+```
+
+## 🔄 Evaluation <a name="evaluating"></a>
+
+To evaluate a checkpoint, do not forget to specify the actual resolution and the visibility filtering applied.
+```bash
+python pointbev/train.py train=False test=True task_name=eval \
+ckpt.path=PATH_TO_CKPT \
+model/net/backbone=efficientnet \
+data/augs@data.img_params=scale_0_5 \
+data.img_params.min_visibility=1 
+```
+
+If you evaluate a pedestrian or an hdmap model do not forget to change the annotations.
+```bash
+python pointbev/train.py train=False test=True task_name=eval \
+ckpt.path=PATH_TO_CKPT \
+model/net/backbone=resnet50 \
+data/augs@data.img_params=scale_0_3 \
+data.img_params.min_visibility=2 \
+data.filters_cat="[pedestrian]" # Instead of filtering vehicles, we filter pedestrians for GT.
+```
+
+If you evaluate a temporal model do not forget to change the model and the temporal frames.
+```bash
+python pointbev/train.py train=False test=True task_name=eval \
+model=PointBeV_T \
+data.cam_T_P='[[-8,0],[-7,0],[-6,0],[-5,0],[-4,0],[-3,0],[-2,0],[-1,0],[0,0]]' \
+ckpt.path=PATH_TO_CKPT \
+model/net/backbone=resnet50 \
+data/augs@data.img_params=scale_0_3 \
+data.img_params.min_visibility=2 \
+data.filters_cat="[pedestrian]"
+```
+About the temporal frames, T_P means 'Time_Pose'. For instance:
+- [[-1,0]] outputs the T=-1 BeV at the T=0 location.
+- [[0,-1]] outputs the T=0 BeV at the T=-1 location.
+- [[-8,0],[-7,0],[-6,0],[-5,0],[-4,0],[-3,0],[-2,0],[-1,0],[0,0]] outputs the T=-8 to T=0 BeV at the T=0 location.
+
+## 👍 Acknowledgements
 
 Many thanks to these excellent open source projects:
 * https://github.com/nv-tlabs/lift-splat-shoot
 * https://github.com/aharley/simple_bev
 * https://github.com/fundamentalvision/BEVFormer
 
-To structure our code we used:
+To structure our code we used this template:
 https://github.com/ashleve/lightning-hydra-template
 
-# 📝 BibTeX
 
-If this work is helpful for your research, please consider citing the following BibTeX entry.
-
-```
-@misc{chambon2023pointbev,
-      title={PointBeV: A Sparse Approach to BeV Predictions}, 
-      author={Loick Chambon and Eloi Zablocki and Mickael Chen and Florent Bartoccioni and Patrick Perez and Matthieu Cord},
-      year={2023},
-      eprint={2312.00703},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
-}
-```
-
-# 📜 License
-
-This project is released under the MIT license
+## Todo:
+- [x] Release other checkpoints.

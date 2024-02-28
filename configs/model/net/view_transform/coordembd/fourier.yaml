@@ -1,0 +1,7 @@
+_target_: pointbev.models.layers.attention.PositionalEncodingMap
+m: 8
+with_mlp: True
+in_c: 3
+out_c: ${model.net.out_c.vt}
+num_hidden_layers: 2
+mid_c: ${mult:${model.net.out_c.vt},2}

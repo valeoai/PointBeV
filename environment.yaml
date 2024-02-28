@@ -1,0 +1,55 @@
+name:
+  pointbev
+channels:
+  - nvidia
+  - pytorch
+  - defaults
+  - conda-forge
+  - pyg
+dependencies:
+  - python
+  # DL
+  - cudatoolkit>=10.1
+  - libcufile=1.4.0.31
+  - pytorch<2.1.0
+  - torchvision>=0.15.0
+  # Geometric
+  - pytorch-scatter
+  - pyg 
+  - pytorch-cluster
+  # Notebooks
+  - jupyter
+  # Visualisations.
+  - matplotlib<3.8.0
+  - plotly
+  - pip
+  - pip:
+    # Datasets
+    - nuscenes-devkit==1.1.0
+    - lyft_dataset_sdk
+    # Format
+    - black
+    # DL
+    - timm
+    - pytorch-lightning<2.0.0
+    - torchmetrics<1.0.0
+    - efficientnet_pytorch==0.7.1
+    - einops
+    - spconv-cu117
+    # Hydra
+    - hydra-core==1.3.2
+    - hydra-colorlog==1.2.0
+    - hydra-optuna-sweeper==1.2.0
+    # ML
+    - opencv-python
+    - pyquaternion
+    # Logger
+    - wandb
+    - tensorboard
+    # Others
+    - pyrootutils
+    - pre-commit
+    - click             # for easy script cli
+    - rich              # beautiful text formatting in terminal
+    - shapely==1.8.5    # for creating maps.
+    - pytest

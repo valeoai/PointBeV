@@ -1,0 +1,7 @@
+_target_: pointbev.models.heads.BEVConvHead
+shared_out_c: ${model.net.out_c.autoencoder}
+# Outputs
+with_centr_offs: ${data.keep_input_centr_offs}
+with_binimg: ${data.keep_input_binimg}
+with_hdmap: ${data.keep_input_hdmap}
+hdmap_names: ${data.hdmap_names}

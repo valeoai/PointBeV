@@ -1,0 +1,4 @@
+_target_: pointbev.models.img_encoder.EfficientNet
+checkpoint_path: ${paths.backbone_dir}/
+version: 'b4'
+downsample: 8

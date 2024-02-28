@@ -1,0 +1,15 @@
+_target_: pointbev.models.img_encoder.AGPNeck
+
+align_res_layer:
+  _target_: pointbev.models.img_encoder.neck.AlignRes
+  mode: "upsample"
+  scale_factors: [1, 2]
+  in_channels: ${model.net.in_c.neck}
+
+prepare_c_layer:
+  _target_: pointbev.models.img_encoder.neck.PrepareChannel
+  in_channels: ${model.net.in_c.neck}
+  interm_c: ${get_neck_interm_c:${model.net.backbone._target_}}
+  out_c: ${model.net.out_c.neck}
+  mode: "doubleconv"
+  tail_mode: "conv2d"

@@ -1,0 +1,78 @@
+defaults:
+  - _self_ 
+  - augs@img_params: scale_0_3.yaml
+
+_target_: pointbev.data.datamodule.NuScenesDatamodule
+
+# Nuscenes
+version: trainval
+dataroot: ${paths.data_dir}/nuScenes
+hdmaproot: ${paths.data_dir}/nuscenes_processed_map
+is_lyft: False
+
+# Grid
+grid:
+  xbound: [-50.0, 50.0, 0.5]
+  ybound: [-50.0, 50.0, 0.5]
+  zbound: [-10.0, 10.0, 20.0]
+  dbound: [4.0, 45.0, 1.0]
+
+# Images
+img_loader:
+  _target_: pointbev.utils.imgs.ImageLoader
+  mode: PIL
+
+img_params:
+  H: 900
+  W: 1600
+  cams:
+    - 'CAM_FRONT_LEFT'
+    - 'CAM_FRONT'
+    - 'CAM_FRONT_RIGHT'
+    - 'CAM_BACK_LEFT'
+    - 'CAM_BACK'
+    - 'CAM_BACK_RIGHT'
+  Ncams: 6
+  min_visibility: 2
+  update_intrinsics: True
+  downsample: ${model.net.backbone.downsample}
+
+# Coefficients
+coeffs:
+  bev_aug:
+    trans_rot: [30.,20.,0.,20.,0.,0.]
+
+# Dataloader
+batch_size: 1
+valid_batch_size: ${data.batch_size}
+num_workers: 16
+pin_memory: True
+prefetch_factor: 2
+train_drop_last: True
+train_shuffle: True
+
+# Inputs.
+normalize_img: True 
+keep_input_binimg: True
+keep_input_centr_offs: True
+keep_input_detection: False
+keep_input_hdmap: False
+hdmap_names: ['drivable_area']
+keep_input_persp: False
+keep_input_sampling: False
+keep_input_offsets_map: False
+keep_input_lidar: False
+save_folder: ""
+visualise_mode: False
+
+# Multi-scale
+kernel_scales: [1]
+
+# Temporal
+cam_T_P: [[0,0]]
+bev_T_P: [[0,0]]
+mode_ref_cam_T: 'present'
+
+# Filters
+only_object_center_in: false
+filters_cat: ['vehicle']

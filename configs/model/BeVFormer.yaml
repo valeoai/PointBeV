@@ -1,0 +1,54 @@
+defaults:
+  - Base.yaml
+  - _self_
+
+name: BeVFormer
+
+net:
+  _target_: pointbev.models.bevformer.BevFormerNetwork
+
+  in_shape:
+    query_gen: [200,200] # bev queries
+    hit_views: 8
+    projector: [200,200,8]
+    spatial_bounds: ${model.net.projector.spatial_bounds}
+
+  in_c:
+    neck: ${get_in_c_neck:${model.net.backbone._target_}}
+
+  out_c:
+    base_neck: 128
+    neck : ${model.net.out_c.base_neck}
+    vt: ${model.net.out_c.base_neck}
+    query_gen: 128
+    autoencoder: ${model.net.out_c.vt}
+
+  query_gen:
+    _target_: pointbev.models.bevformer.Latent2DQueryGenerator
+    bev_shape: ${model.net.in_shape.query_gen}
+    channels: ${model.net.out_c.query_gen}
+
+  projector:
+    _target_: pointbev.models.projector.bevformer.BevFormerProjector
+    spatial_bounds:  [-49.75, 49.75, -49.75, 49.75, -3.375, 5.375]
+
+  view_transform:
+    _target_: pointbev.models.view_transform.attention.DefAttnVT
+    n_layers: 6 
+    query_c: ${model.net.out_c.query_gen}
+    ffn_dim: 1028
+    sa_defattn_kwargs:
+      in_c: ${model.net.out_c.query_gen}
+      dropout: 0.1
+      query_shape: ${model.net.in_shape.query_gen}
+      msdef_kwargs: 
+        n_levels: 1
+        n_heads: 4
+        n_points: 8
+    ca_defattn_kwargs:
+      in_c: ${model.net.out_c.query_gen}
+      dropout: 0.1
+      msdef_kwargs:
+        num_levels: 1
+        num_heads: 4
+        num_points: 8

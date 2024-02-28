@@ -1,0 +1,6 @@
+_target_: torch_geometric.nn.TransformerConv
+in_channels: ${model.net.temporal.layer.in_c}
+out_channels: ${model.net.temporal.layer.out_c}
+heads: 8
+concat: False
+root_weight: False

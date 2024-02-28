@@ -1,0 +1,4 @@
+_target_: pointbev.models.projector.CamProjector
+spatial_bounds:  [-49.75, 49.75, -49.75, 49.75, -3.375, 5.375]
+voxel_ref: ${model.net.voxel_ref}
+z_value_mode: 'zero'

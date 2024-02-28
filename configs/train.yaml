@@ -1,0 +1,80 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - data: nuscenes.yaml
+  - model: PointBeV.yaml
+  - callbacks: default_pl.yaml
+  - plugins: null
+  - logger: default_pl.yaml
+  - trainer: ddp_pl.yaml
+  - paths: default.yaml
+  - extras: default.yaml
+  - hydra: default.yaml
+  - losses@model.loss_kwargs.segm_type: bcewithlogit.yaml
+  - optional local: default.yaml
+  - debug: null
+
+# task name, determines output directory path
+task_name: "train"
+
+tags: ["dev"]
+train: True
+test: False
+profile: False
+
+# simply provide checkpoint path to resume training
+ckpt:
+  path: null
+  model:
+    freeze: null
+    load: 'all'
+
+# seed for random number generators in pytorch, numpy and python.random
+seed: null
+
+log_every_n_steps: 50 
+
+flags:
+  debug: false
+  val_sparse: false
+
+model:
+  loss_kwargs:
+    with_binimg: ${data.keep_input_binimg}
+    pos_weight: 2.13
+    with_hdmap: ${data.keep_input_hdmap}
+    hdmap_names: ${data.hdmap_names}
+    with_centr_offs: ${data.keep_input_centr_offs}
+    compress_persp: False
+    segm_type: null
+
+  weights_kwargs:
+    mode: "learned"
+
+  train_kwargs:
+    train_loss_frequency: 200
+    train_visu_frequency: 1000
+    train_visu_epoch_frequency: 10
+    train_visu_imgs: false
+
+  val_kwargs:
+    val_visu_frequency: 250
+    val_visu_imgs: false
+    val_calculate_losses: False
+    
+  metric_kwargs:
+    with_dynamic_tag: false
+    with_sampler: ${data.keep_input_sampling}
+    with_distance: false
+    only_val: true 
+    track_pts: False
+    track_mem: False
+    track_pts_thresh: False
+    pts_thresh: 0.
+    
+  temporal_kwargs:
+    cam_T_P: ${data.cam_T_P}
+    bev_T_P: ${data.bev_T_P}
+
+  grid: ${data.grid}

@@ -1,0 +1,20 @@
+defaults: 
+  - _self_
+  - coordembd: fourier.yaml
+  - heightcomp@heightcomp.comp: convn.yaml
+
+_target_: pointbev.models.view_transform.GridSampleVT
+voxel_shape: ${model.net.in_shape.projector}
+in_c: ${model.net.in_c.vt}
+out_c: ${model.net.out_c.vt}
+# GS
+N_group: ${model.net.out_c.N_group}
+grid_sample_mode: base
+# Embedding
+coordembd: null
+# Height compressor
+heightcomp:
+  comp: null
+# Dense or sparse
+input_sparse: False
+return_sparse: False

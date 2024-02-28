@@ -1,0 +1,8 @@
+defaults:
+  - gs.yaml
+  - _self_
+  - override heightcomp@heightcomp.comp: mlp.yaml
+
+grid_sample_mode: sparse_optim
+input_sparse: True
+return_sparse: True

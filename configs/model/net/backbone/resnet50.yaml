@@ -1,0 +1,4 @@
+_target_: pointbev.models.img_encoder.Encoder_res50
+downsample: 8
+checkpoint_path: ${paths.backbone_dir}/
+checkpointing: False

@@ -1,0 +1,6 @@
+scale: [1., 1.]
+zoom_lim: [0.95,1.05]
+final_dim: [640,1600] # same as PeTRv2
+rot_lim: [-2.5, 2.5]
+crop_up_pct: [0.71, 1.]
+rand_flip: False

@@ -1,0 +1,23 @@
+wandb:
+  _target_: pytorch_lightning.loggers.wandb.WandbLogger
+  id: null
+  anonymous: null 
+  project: "lightning-hydra-template"
+  log_model: False 
+  prefix: ""
+  group: ""
+  tags: []
+  job_type: ""
+
+  save_dir: ${hydra:run.dir}
+  name: ${model.name}
+  version: ''
+  offline: True
+
+tensorboard:
+  _target_: pytorch_lightning.loggers.tensorboard.TensorBoardLogger
+  log_graph: False
+  prefix: ""
+  save_dir: ${hydra:run.dir}
+  default_hp_metric: False
+  name: tb_logs

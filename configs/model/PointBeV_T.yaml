@@ -1,0 +1,6 @@
+defaults:
+  - PointBeV.yaml
+  - _self_
+  - override net/temporal: sparse.yaml
+
+name: PointBeV_T

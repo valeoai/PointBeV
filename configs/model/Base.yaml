@@ -1,0 +1,9 @@
+defaults:
+  - _self_
+  - net/backbone: efficientnet.yaml
+  - net/neck: agp.yaml
+  - net/heads: convn.yaml
+  - optimizer: adamW.yaml
+  - scheduler: onecycle.yaml
+
+_target_: pointbev.models.BasicTrainer

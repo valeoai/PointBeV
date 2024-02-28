@@ -1,0 +1,11 @@
+classname : torch.optim.lr_scheduler.OneCycleLR
+max_lr: -1
+total_steps: -1
+div_factor: 3
+final_div_factor: 20
+pct_start: 0.05
+cycle_momentum: False
+anneal_strategy: "linear"
+
+# PL
+interval: step

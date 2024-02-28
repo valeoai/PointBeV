@@ -1,0 +1,48 @@
+defaults:
+  - Base.yaml
+  - _self_
+  - net/projector: camprojector.yaml
+  - net/temporal: null
+  - net/autoencoder: sparse_unet.yaml
+  - net/view_transform: gs_sparse.yaml
+  - override net/heads: sparse_convn.yaml
+  
+name: PointBeV
+_target_: pointbev.models.BasicTrainer
+
+net:
+  _target_: pointbev.models.PointBeV
+
+  in_shape: 
+    projector: [200,200,8]
+    spatial_bounds: ${model.net.projector.spatial_bounds}
+
+  voxel_ref: "spatial"
+
+  in_c:
+    neck: ${get_in_c_neck:${model.net.backbone._target_}}
+    vt: ${model.net.out_c.base_neck}
+
+  out_c: 
+    base_neck: 128
+    N_group: 1
+    neck: ${mult:${model.net.out_c.base_neck},${model.net.out_c.N_group}}
+    vt: ${model.net.out_c.base_neck}
+    autoencoder: ${model.net.out_c.vt}
+
+  sampled_kwargs:
+    # Coarse
+    N_coarse:  2_500
+    mode: rnd_pillars
+    val_mode: dense
+    patch_size: 1
+    compress_height: False
+    # Fine
+    with_fine: True
+    valid_fine: False
+    N_fine: 2_500
+    N_anchor: 100
+    fine_patch_size: 9
+    fine_thresh: 0.1
+    # Temporal
+    temp_thresh: -5

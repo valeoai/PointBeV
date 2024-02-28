@@ -1,0 +1,10 @@
+classname: pointbev.models.layers.ConvNormAct
+mode: convn
+in_c: ${model.net.in_c.vt} # Multiplied later by Ycam
+out_c: ${model.net.out_c.vt}
+kernel_size: 3
+padding: 1
+bias: False
+norm: torch.nn.InstanceNorm2d
+activ: torch.nn.GELU
+activ_kwargs: {}

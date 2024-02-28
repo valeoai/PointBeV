@@ -1,0 +1,14 @@
+defaults:
+  - _self_
+  - layer: torchgeom.yaml
+
+_target_: pointbev.models.temporal.SparseTemporal
+ws: 1
+cam_T_P: ${data.cam_T_P}
+bev_T_P: ${data.bev_T_P}
+sparse: true
+embd_dim: ${model.net.out_c.vt}
+out_mode: present
+forward_mode: "sparse_torchgeom"
+temp_embd_mode: "fourier"
+win_neigh: [1,1]

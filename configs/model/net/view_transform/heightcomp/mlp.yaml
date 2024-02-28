@@ -1,0 +1,7 @@
+classname: pointbev.models.layers.MLP
+mode: mlp
+in_c: ${model.net.in_c.vt} # Multiplied later by Ycam
+mid_c: ${model.net.out_c.vt}
+out_c: ${model.net.out_c.vt}
+num_layers: 4
+as_conv: True
