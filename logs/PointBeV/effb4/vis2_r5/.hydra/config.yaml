@@ -1,0 +1,360 @@
+task_name: /effb4/vis2_r5
+tags:
+- dev
+train: true
+test: false
+compile: false
+profile: false
+ckpt:
+  path: null
+  model:
+    freeze: null
+    load: all
+seed: null
+log_every_n_steps: 50
+flags:
+  debug: false
+  val_sparse: false
+  ablations: ''
+model:
+  loss_kwargs:
+    with_binimg: ${data.keep_input_binimg}
+    pos_weight: 2.13
+    with_hdmap: ${data.keep_input_hdmap}
+    hdmap_names: ${data.hdmap_names}
+    with_centr_offs: ${data.keep_input_centr_offs}
+    segm_type:
+      cls: BCELoss
+      kwargs:
+        pos_weight: ${model.loss_kwargs.pos_weight}
+  weights_kwargs:
+    mode: learned
+  train_kwargs:
+    train_loss_frequency: 200
+    train_visu_frequency: 1000
+    train_visu_epoch_frequency: 10
+    train_visu_imgs: false
+    train_add_views: false
+  val_kwargs:
+    val_visu_frequency: 250
+    val_visu_imgs: false
+    val_add_views: false
+    val_calculate_losses: false
+  metric_kwargs:
+    with_dynamic_tag: false
+    with_sampler: ${data.keep_input_sampling}
+    with_distance: false
+    only_val: true
+    track_pts: False
+    track_mem: False
+    track_pts_thresh: False
+    pts_thresh: 0.
+  temporal_kwargs:
+    cam_T_P: ${data.cam_T_P}
+    bev_T_P: ${data.bev_T_P}
+  grid: ${data.grid}
+  _target_: pointbev.models.BasicTrainer
+  net:
+    backbone:
+      _target_: pointbev.models.img_encoder.EfficientNet
+      checkpoint_path: ${paths.backbone_dir}/
+      version: b4
+      downsample: 8
+    neck:
+      _target_: pointbev.models.img_encoder.AGPNeck
+      align_res_layer:
+        _target_: pointbev.models.img_encoder.neck.AlignRes
+        mode: upsample
+        scale_factors:
+        - 1
+        - 2
+        in_channels: ${model.net.in_c.neck}
+      prepare_c_layer:
+        _target_: pointbev.models.img_encoder.neck.PrepareChannel
+        in_channels: ${model.net.in_c.neck}
+        interm_c: ${get_neck_interm_c:${model.net.backbone._target_}}
+        out_c: ${model.net.out_c.neck}
+        mode: doubleconv
+        tail_mode: conv2d
+    heads:
+      _target_: pointbev.models.heads.BEVConvHead
+      shared_out_c: ${model.net.out_c.autoencoder}
+      with_centr_offs: ${data.keep_input_centr_offs}
+      with_binimg: ${data.keep_input_binimg}
+      with_hdmap: ${data.keep_input_hdmap}
+      hdmap_names: ${data.hdmap_names}
+      dense_input: False
+    _target_: pointbev.models.PointBeV
+    in_shape:
+      projector:
+      - 200
+      - 200
+      - 8
+      spatial_bounds: ${model.net.projector.spatial_bounds}
+    voxel_ref: spatial
+    in_c:
+      neck: ${get_in_c_neck:${model.net.backbone._target_}}
+      vt: ${model.net.out_c.base_neck}
+    out_c:
+      base_neck: 128
+      N_group: 1
+      neck: ${mult:${model.net.out_c.base_neck},${model.net.out_c.N_group}}
+      vt: ${model.net.out_c.base_neck}
+      autoencoder: ${model.net.out_c.vt}
+    projector:
+      _target_: pointbev.models.projector.CamProjector
+      spatial_bounds:
+      - -49.75
+      - 49.75
+      - -49.75
+      - 49.75
+      - -3.375
+      - 5.375
+      voxel_ref: ${model.net.voxel_ref}
+      z_value_mode: zero
+    view_transform:
+      _target_: pointbev.models.view_transform.GridSampleVT
+      voxel_shape: ${model.net.in_shape.projector}
+      in_c: ${model.net.in_c.vt}
+      out_c: ${model.net.out_c.vt}
+      N_group: ${model.net.out_c.N_group}
+      grid_sample_mode: sparse_optim
+      coordembd:
+        _target_: pointbev.models.layers.attention.PositionalEncodingMap
+        m: 8
+        with_mlp: True
+        in_c: 3
+        out_c: ${model.net.out_c.vt}
+        num_hidden_layers: 2
+        mid_c: ${mult:${model.net.out_c.vt},2}
+      heightcomp: 
+        comp:
+          classname: pointbev.models.layers.MLP
+          mode: mlp
+          in_c: ${model.net.in_c.vt}
+          mid_c: ${model.net.out_c.vt}
+          out_c: ${model.net.out_c.vt}
+          num_layers: 4
+          as_conv: true
+      input_sparse: true
+      return_sparse: true
+
+    autoencoder:
+      _target_: pointbev.models.autoencoder.SparseUNet
+      in_c: ${model.net.out_c.vt}
+      with_tail_conv: false
+      with_large_kernels: false
+      with_decoder_bias: false
+    sampled_kwargs:
+      N_coarse: 2500
+      mode: rnd_pillars
+      val_mode: dense
+      patch_size: 1
+      compress_height: false
+      with_fine: true
+      valid_fine: false
+      N_fine: 2500
+      N_anchor: 100
+      fine_patch_size: 7
+      fine_thresh: 0.2
+      reinject_pts: true
+
+  optimizer:
+    _target_: torch.optim.AdamW
+    _partial_: true
+    lr: 0.0003
+    weight_decay: 1.0e-07
+  scheduler:
+    classname: torch.optim.lr_scheduler.OneCycleLR
+    max_lr: -1
+    total_steps: -1
+    div_factor: 3
+    final_div_factor: 20
+    pct_start: 0.05
+    cycle_momentum: false
+    anneal_strategy: linear
+    interval: step
+  name: StaticModel
+data:
+  _target_: pointbev.data.datamodule.NuScenesDatamodule
+  version: trainval
+  dataroot: ${paths.data_dir}/nuScenes
+  hdmaproot: ${paths.data_dir}/nuscenes_processed_map
+  grid:
+    xbound:
+    - -50.0
+    - 50.0
+    - 0.5
+    ybound:
+    - -50.0
+    - 50.0
+    - 0.5
+    zbound:
+    - -10.0
+    - 10.0
+    - 20.0
+    dbound:
+    - 4.0
+    - 45.0
+    - 1.0
+  img_loader:
+    _target_: pointbev.utils.imgs.ImageLoader
+    mode: PIL
+  img_params:
+    H: 900
+    W: 1600
+    cams:
+    - CAM_FRONT_LEFT
+    - CAM_FRONT
+    - CAM_FRONT_RIGHT
+    - CAM_BACK_LEFT
+    - CAM_BACK
+    - CAM_BACK_RIGHT
+    Ncams: 6
+    min_visibility: 2
+    update_intrinsics: true
+    downsample: ${model.net.backbone.downsample}
+    scale:
+    - 0.294
+    - 0.308
+    zoom_lim:
+    - 0.95
+    - 1.05
+    final_dim:
+    - 448
+    - 800
+    rot_lim:
+    - -2.5
+    - 2.5
+    crop_up_pct:
+    - 0.83
+    - 0.83
+    rand_flip: false
+  coeffs:
+    seq_aug:
+      trans_rot:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.0
+    bev_aug:
+      trans_rot:
+      - 30.0
+      - 20.0
+      - 0.0
+      - 20.0
+      - 0.0
+      - 0.0
+  batch_size: 4
+  valid_batch_size: 22
+  num_workers: 16
+  pin_memory: true
+  prefetch_factor: 2
+  train_drop_last: true
+  train_shuffle: true
+  normalize_img: true
+  keep_input_binimg: true
+  keep_input_centr_offs: true
+  keep_input_detection: false
+  keep_input_hdmap: false
+  hdmap_names:
+  - drivable_area
+  keep_input_persp: false
+  keep_input_sampling: false
+  keep_input_offsets_map: false
+  keep_input_lidar: false
+  save_folder: ''
+  visualise_mode: False
+  is_lyft: False
+  cam_T_P:
+  - - 0
+    - 0
+  bev_T_P:
+  - - 0
+    - 0
+  mode_ref_cam_T: present
+  only_object_center_in: false
+  filters_cat:
+  - vehicle
+  to_cam_ref: false
+  random_cam_ref: false
+  force_camref: null
+callbacks:
+  rich_progress_bar:
+    _target_: pytorch_lightning.callbacks.RichProgressBar
+    refresh_rate: 20
+  learning_rate_monitor:
+    _target_: pytorch_lightning.callbacks.LearningRateMonitor
+    logging_interval: step
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    verbose: false
+    save_top_k: 1
+    save_weights_only: false
+    every_n_train_steps: null
+    train_time_interval: null
+    every_n_epochs: null
+    save_on_train_epoch_end: null
+    dirpath: ${paths.output_dir}/checkpoints
+    monitor: val_bev_metric_iou_Time_Pose_T0_P0
+    filename: '{epoch:03d}_{val_bev_metric_iou_Time_Pose_T0_P0:.4f}'
+    mode: max
+    save_last: true
+    auto_insert_metric_name: false
+  model_summary:
+    _target_: pytorch_lightning.callbacks.RichModelSummary
+    max_depth: 3
+logger:
+  wandb:
+    _target_: pytorch_lightning.loggers.wandb.WandbLogger
+    save_dir: ${hydra:run.dir}
+    offline: true
+    id: null
+    anonymous: null
+    project: lightning-hydra-template
+    log_model: false
+    prefix: ''
+    group: ''
+    tags: []
+    job_type: ''
+    name: ${model.name}
+    version: ''
+  tensorboard:
+    _target_: pytorch_lightning.loggers.tensorboard.TensorBoardLogger
+    log_graph: false
+    prefix: ''
+    save_dir: ${hydra:run.dir}
+    default_hp_metric: false
+    name: tb_logs
+trainer:
+  _target_: pytorch_lightning.trainer.Trainer
+  default_root_dir: ${paths.output_dir}
+  min_epochs: 1
+  deterministic: false
+  strategy: ddp
+  max_epochs: 100
+  num_sanity_val_steps: 2
+  overfit_batches: 0
+  check_val_every_n_epoch: 1
+  log_every_n_steps: 50
+  gradient_clip_val: 5.0
+  accelerator: gpu
+  devices: 1
+  num_nodes: 1
+  sync_batchnorm: true
+paths:
+  root_dir: ${oc.env:PROJECT_ROOT}
+  data_dir: ${paths.root_dir}/data/
+  log_dir: ${paths.root_dir}/logs/
+  backbone_dir: ${paths.root_dir}/backbones/
+  output_dir: ${hydra:runtime.output_dir}
+  work_dir: ${hydra:runtime.cwd}
+extras:
+  ignore_warnings: false
+  enforce_tags: true
+  print_config: true
+  freeze: []
+  load: []
+  desc: ''

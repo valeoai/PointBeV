@@ -1,0 +1,7 @@
+- data.batch_size=4
+- data.valid_batch_size=22
+- data/augs@data.img_params=scale_0_5
+- data.img_params.min_visibility=1
+- task_name=ablations/backbone/effb4/vis1_ratio0_5
+- model/net/backbone=efficientnet
+- trainer.num_sanity_val_steps=2

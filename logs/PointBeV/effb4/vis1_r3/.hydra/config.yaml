@@ -1,4 +1,4 @@
-task_name: ablations/backbone/effb4/vis1_ratio0_3
+task_name: effb4/vis1_r3
 tags:
 - dev
 train: true

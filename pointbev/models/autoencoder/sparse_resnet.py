@@ -5,7 +5,7 @@ from torch import nn
 from pointbev.utils.debug import debug_hook
 
 algo = spconv.ConvAlgo.Native
-from pointbev.layers.common import SparseUpsamplingAdd, SubMConvNormReLU
+from pointbev.models.layers.common import SparseUpsamplingAdd, SubMConvNormReLU
 
 
 # Sparse UNET
