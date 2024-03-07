@@ -294,6 +294,15 @@ About the temporal frames, T_P means 'Time_Pose'. For instance:
 - [[0,-1]] outputs the T=0 BeV at the T=-1 location.
 - [[-8,0],[-7,0],[-6,0],[-5,0],[-4,0],[-3,0],[-2,0],[-1,0],[0,0]] outputs the T=-8 to T=0 BeV at the T=0 location.
 
+# Checkpoints
+
+| Backbone | Resolution | Visibility | IoU |
+| -------- | --------   | --------   | --- |
+| Eff-b4   | 224x480    | 1          | [38.69](https://github.com/valeoai/PointBeV/releases/download/checkpoints/38_69.ckpt) |
+| Eff-b4   | 448x800    | 1          | [42.09](https://github.com/valeoai/PointBeV/releases/download/checkpoints/42_09.ckpt) |
+| Eff-b4   | 224x480    | 2          | [43.97](https://github.com/valeoai/PointBeV/releases/download/checkpoints/43_97.ckpt) |
+| Eff-b4   | 448x800    | 2          | [47.58](https://github.com/valeoai/PointBeV/releases/download/checkpoints/47_58.ckpt) |
+
 ## 👍 Acknowledgements
 
 Many thanks to these excellent open source projects:
